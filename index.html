@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>80 Anos de Telma Fogaça - Uma Vida em Flor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Font Setup */
+        body { font-family: 'Lato', sans-serif; }
+        h1, h2, h3, .serif-font { font-family: 'Playfair Display', serif; }
+        
+        /* Chart Container Styling Rules */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        /* Timeline connection line */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background-color: #e5e7eb;
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        /* Flower animation classes */
+        .flower-float {
+            animation: floatUp 2s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Floral Accents (Stone, Rose, Amber) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Emotional introduction with a "Plant a Flower" interaction to engage immediately.
+         2. Interactive Timeline (A Jornada): Vertical layout allowing users to explore key life phases (Roots, Marriage, Challenges, Matriarch) independently without reading a wall of text.
+         3. Personality Radar (A Essência): A Chart.js radar chart to visualize her multifaceted character (Faith, Strength, Love, Festivity) derived from the text.
+         4. Family Garden (O Legado): A structured, interactive visual list of the family tree, replacing a static list for better cognitive processing of the 3 generations.
+         5. Digital Guestbook Concept: A closing call to action to celebrate her life.
+         Why: This structure breaks the dense biographical text into explorable thematic sections, making the 80-year history digestible and engaging.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Timeline: Goal -> Organize History. Method -> Vertical Flex List with JS dynamic content. Interaction -> Click year to see details. Justification -> Linear narrative is best consumed chronologically but interactively.
+         2. Radar Chart: Goal -> Inform/Compare Traits. Method -> Chart.js Radar. Interaction -> Hover to see values. Justification -> Visualizes abstract personality traits (Guerreira, Rezadeira, Festeira) effectively.
+         3. Family Tree Cards: Goal -> Relationships. Method -> HTML Grid. Interaction -> None (Static visual clarity). Justification -> Clear hierarchy of generations.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-rose-200 selection:text-rose-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-stone-200 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="serif-font text-xl font-bold text-rose-600">Telma 80 Anos</div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('hero')" class="text-stone-600 hover:text-rose-600 transition-colors">Início</button>
+                    <button onclick="scrollToSection('timeline')" class="text-stone-600 hover:text-rose-600 transition-colors">Jornada</button>
+                    <button onclick="scrollToSection('personality')" class="text-stone-600 hover:text-rose-600 transition-colors">Essência</button>
+                    <button onclick="scrollToSection('family')" class="text-stone-600 hover:text-rose-600 transition-colors">Legado</button>
+                </div>
+                <!-- Mobile menu button (simplified interaction) -->
+                <button class="md:hidden text-stone-600" onclick="alert('Explore a página rolando para baixo!')">
+                    ☰
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="hero" class="relative bg-rose-50 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4 py-16 sm:px-6 lg:py-24 lg:px-8 flex flex-col md:flex-row items-center">
+            <div class="flex-1 text-center md:text-left z-10">
+                <span class="inline-block py-1 px-3 rounded-full bg-rose-100 text-rose-800 text-sm font-semibold tracking-wide mb-4">02 Jan 1946 — 02 Jan 2026</span>
+                <h1 class="text-4xl md:text-6xl font-bold text-stone-900 mb-6 leading-tight">
+                    A História de <br>
+                    <span class="text-rose-600">Telma Fogaça</span>
+                </h1>
+                <p class="text-lg md:text-xl text-stone-600 mb-8 max-w-2xl font-light italic">
+                    "Do alto da serra ao litoral, 80 anos tecendo uma vida de fé, amor e flores."
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <button onclick="scrollToSection('timeline')" class="px-8 py-3 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        Conhecer sua História
+                    </button>
+                    <button onclick="plantFlower()" class="px-8 py-3 bg-white border border-rose-200 text-rose-600 rounded-lg font-semibold hover:bg-rose-50 transition-colors flex items-center justify-center gap-2">
+                        <span>🌹</span> Deixar uma Flor <span id="flower-count" class="bg-rose-100 text-rose-800 text-xs px-2 py-0.5 rounded-full ml-2">0</span>
+                    </button>
+                </div>
+                <div id="flower-garden" class="h-12 mt-4 relative w-full overflow-visible"></div>
+            </div>
+            <!-- Decorative Visual (CSS only) -->
+            <div class="flex-1 mt-10 md:mt-0 relative flex justify-center">
+                <div class="w-64 h-80 bg-stone-200 rounded-t-full rounded-b-lg border-8 border-white shadow-2xl relative overflow-hidden flex items-center justify-center bg-cover bg-center" style="background-image: url('https://placehold.co/400x600/eab308/ffffff?text=Telma+80+Anos');">
+                    <!-- Placeholder for actual photo -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-rose-900/40 to-transparent"></div>
+                    <div class="absolute bottom-4 left-0 right-0 text-center text-white font-serif">
+                        <p class="text-lg">Dona Telma</p>
+                    </div>
+                </div>
+                <!-- Decorative Elements -->
+                <div class="absolute -z-10 top-10 right-10 w-24 h-24 bg-rose-200 rounded-full blur-2xl opacity-50"></div>
+                <div class="absolute -z-10 bottom-10 left-10 w-32 h-32 bg-amber-200 rounded-full blur-2xl opacity-50"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-16">
+
+        <!-- SECTION 1: TIMELINE (Interactive) -->
+        <section id="timeline" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900 mb-4 serif-font">A Jornada da Vida</h2>
+                <p class="text-stone-600 max-w-2xl mx-auto">
+                    Navegue pelos momentos marcantes que construíram estes 80 anos. Clique nos cartões para ler os detalhes de cada época.
+                </p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Timeline Navigation (Left) -->
+                <div class="md:w-1/3 space-y-4 timeline-line relative pb-8 md:pb-0">
+                    <!-- Generated via JS -->
+                    <div id="timeline-nav" class="space-y-6 relative z-10"></div>
+                </div>
+
+                <!-- Timeline Content Display (Right) -->
+                <div class="md:w-2/3">
+                    <div id="timeline-display" class="bg-white p-8 rounded-2xl shadow-lg border border-stone-100 h-full transition-all duration-300 ease-in-out">
+                        <!-- Content populated by JS -->
+                        <div class="flex items-center justify-center h-full text-stone-400">
+                            Selecione um momento ao lado...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: PERSONALITY (Radar Chart) -->
+        <section id="personality" class="scroll-mt-24 bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-stone-100">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-stone-900 mb-4 serif-font">A Essência de Telma</h2>
+                    <p class="text-stone-600 mb-6 text-justify">
+                        Telma não se define por uma única palavra. Sua vida é um equilíbrio entre a força da mulher guerreira, a doçura da avó e a devoção da fé. Este gráfico visualiza as qualidades que todos reconhecem nela.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-2xl mr-3">🙏</span>
+                            <div>
+                                <strong class="text-stone-900">A Rezadeira:</strong>
+                                <span class="text-stone-600 text-sm block">Transformou sua comunidade pela fé e devoção a Nossa Senhora.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-2xl mr-3">⚔️</span>
+                            <div>
+                                <strong class="text-stone-900">A Guerreira:</strong>
+                                <span class="text-stone-600 text-sm block">Enfrentou doenças e cuidou dos seus com força inabalável.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-2xl mr-3">🎉</span>
+                            <div>
+                                <strong class="text-stone-900">A Festeira:</strong>
+                                <span class="text-stone-600 text-sm block">Alegre, adora dançar nas domingueiras e estar entre amigos.</span>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="text-2xl mr-3">🌹</span>
+                            <div>
+                                <strong class="text-stone-900">A Jardineira:</strong>
+                                <span class="text-stone-600 text-sm block">Ama flores e fez de sua vida um jardim perfumado.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-rose-50 rounded-2xl p-6 flex flex-col items-center justify-center">
+                    <h3 class="text-center text-rose-800 font-semibold mb-2">Mapa de Personalidade</h3>
+                    <!-- Chart Container -->
+                    <div class="chart-container">
+                        <canvas id="traitsChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-stone-500 mt-4">Baseado nos relatos da homenagem</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: FAMILY LEGACY (Grid) -->
+        <section id="family" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <span class="text-rose-600 font-semibold tracking-wider uppercase text-sm">O Jardim da Família</span>
+                <h2 class="text-3xl font-bold text-stone-900 mt-2 serif-font">Frutos de um Grande Amor</h2>
+                <p class="text-stone-600 max-w-2xl mx-auto mt-4">
+                    Tudo começou com Telma e Ademeu. Hoje, a família cresceu e floresceu, espalhando suas sementes de amor e união.
+                </p>
+            </div>
+
+            <!-- Generations Display -->
+            <div class="space-y-8">
+                
+                <!-- Generation 1: The Root -->
+                <div class="flex justify-center">
+                    <div class="bg-rose-100 border-2 border-rose-200 px-8 py-4 rounded-xl shadow-sm text-center transform hover:scale-105 transition-transform cursor-default">
+                        <div class="text-2xl mb-1">💍</div>
+                        <h3 class="text-xl font-bold text-rose-900 serif-font">Telma & Ademeu</h3>
+                        <p class="text-sm text-rose-700">A Matriz (1966)</p>
+                    </div>
+                </div>
+
+                <!-- Connector Line -->
+                <div class="flex justify-center h-8">
+                    <div class="w-0.5 bg-stone-300"></div>
+                </div>
+
+                <!-- Generation 2: Children -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                    <div class="bg-white p-4 rounded-lg shadow border border-stone-200 text-center hover:border-rose-300 transition-colors">
+                        <span class="block text-stone-400 text-xs uppercase font-bold mb-1">Filho</span>
+                        <strong class="text-lg text-stone-800">Paulo</strong>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow border border-stone-200 text-center hover:border-rose-300 transition-colors">
+                        <span class="block text-stone-400 text-xs uppercase font-bold mb-1">Filho</span>
+                        <strong class="text-lg text-stone-800">Édison</strong>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow border border-stone-200 text-center hover:border-rose-300 transition-colors">
+                        <span class="block text-stone-400 text-xs uppercase font-bold mb-1">Filha</span>
+                        <strong class="text-lg text-stone-800">Adriane</strong>
+                    </div>
+                </div>
+
+                 <!-- Connector Line -->
+                <div class="flex justify-center h-8">
+                    <div class="w-0.5 bg-stone-300"></div>
+                </div>
+
+                <!-- Generation 3 & 4: Grandchildren -->
+                <div class="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                     <h3 class="text-center font-bold text-stone-500 text-sm uppercase tracking-widest mb-6">A Doçura da Vida (Netos & Bisnetos)</h3>
+                     <div class="flex flex-wrap justify-center gap-3">
+                         <!-- Netos -->
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Lucas</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Bruna</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Isadora</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Ryan</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Aron</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Joana</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Allan</span>
+                         <span class="px-4 py-2 bg-stone-100 rounded-full text-stone-700 text-sm font-medium">Benjamim</span>
+                         <!-- Bisnetos (Highlighted) -->
+                         <span class="px-4 py-2 bg-amber-100 text-amber-800 rounded-full text-sm font-bold border border-amber-200">Vicente (Bisneto)</span>
+                         <span class="px-4 py-2 bg-amber-100 text-amber-800 rounded-full text-sm font-bold border border-amber-200">Lavínia (Bisneta)</span>
+                     </div>
+                     <p class="text-center text-xs text-stone-400 mt-4 italic">"Ser avó é ser mãe com açúcar."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TRIBUTE QUOTE -->
+        <section class="bg-rose-600 text-white rounded-3xl p-8 md:p-16 text-center relative overflow-hidden">
+             <div class="relative z-10">
+                 <h2 class="text-2xl md:text-4xl serif-font font-bold mb-6">"O amor sempre foi o sentimento mais forte entre nós."</h2>
+                 <p class="text-rose-100 text-lg max-w-2xl mx-auto mb-8">
+                     Hoje celebramos a vida, pedindo saúde e agradecendo pelo privilégio de ter a senhora como nosso guia, nosso colo e nossa inspiração.
+                 </p>
+                 <div class="w-16 h-1 bg-rose-400 mx-auto rounded"></div>
+             </div>
+             <!-- Background pattern -->
+             <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none text-9xl flex items-center justify-center">
+                 🌹
+             </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-12 border-t border-stone-800">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="serif-font text-2xl text-stone-200 mb-4">Parabéns pelos 80 Anos</p>
+            <p class="text-sm">Homenagem criada com carinho para Telma Fogaça.</p>
+            <p class="text-xs mt-2 text-stone-600">02 de Janeiro de 1946 — 02 de Janeiro de 2026</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA STORAGE ---
+        // Storing the report content in structured JS objects for dynamic rendering.
+        
+        const timelineData = [
+            {
+                id: 'inicio',
+                year: '1946',
+                title: 'O Início na Serra',
+                icon: '🏔️',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-900 mb-2">As Raízes</h3>
+                    <p class="mb-4">Em 02 de janeiro de 1946, na <strong>Fazenda do Lobo</strong> em Cambará do Sul, nascia Telma de Aguiar Lima, primogênita de Reginaldo e Morency.</p>
+                    <h4 class="font-bold text-rose-600 text-sm uppercase">Infância & Juventude</h4>
+                    <p>Cresceu cuidando dos irmãos e primos. Seu divertimento era andar a cavalo nos campos livres da serra. Menina estudiosa, adorava ler e, aos domingos, brilhava dançando nas domingueiras.</p>
+                `
+            },
+            {
+                id: 'amor',
+                year: '1966',
+                title: 'O Grande Encontro',
+                icon: '❤️',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-900 mb-2">Um Amor de Litoral</h3>
+                    <p class="mb-4">Num passeio à casa das primas no litoral norte, olhares se cruzaram. Em 23 de julho de 1966, num dia frio de inverno, Telma (20 anos) e Ademeu disseram "Sim".</p>
+                    <h4 class="font-bold text-rose-600 text-sm uppercase">Vida a Dois</h4>
+                    <p>Ademeu foi um marido romântico e apaixonado, galanteando-a com flores e doces. Juntos, inspiraram até os pais de Telma a descerem a serra para viverem próximos.</p>
+                `
+            },
+            {
+                id: 'construcao',
+                year: '1970-90',
+                title: 'Construindo a Vida',
+                icon: '🏠',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-900 mb-2">Mãe e Comunidade</h3>
+                    <p class="mb-4">Mãe de Paulo, Édison e Adriane. Foi costureira para ajudar nas despesas e realizou seu sonho de ensinar através da catequese.</p>
+                    <h4 class="font-bold text-rose-600 text-sm uppercase">Engajamento Social</h4>
+                    <p>Patroa do CTG, ministra da eucaristia, ativa no sindicato rural. Onde Telma passa, leva fé e transforma a vizinhança em família.</p>
+                `
+            },
+            {
+                id: 'superacao',
+                year: 'Desafios',
+                title: 'Fé e Superação',
+                icon: '🙏',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-900 mb-2">A Força da Mulher</h3>
+                    <p class="mb-4">Telma enfrentou momentos duros. Cuidou de cunhados até o fim e venceu uma doença misteriosa através da devoção a Nossa Senhora.</p>
+                    <h4 class="font-bold text-rose-600 text-sm uppercase">A Despedida</h4>
+                    <p>A fase mais difícil foi a doença de Ademeu. Noites de choro e diagnósticos, mas ela permaneceu firme ao lado dele até o último instante, sustentada por sua fé inabalável.</p>
+                `
+            },
+            {
+                id: 'hoje',
+                year: '2026',
+                title: '80 Anos de Luz',
+                icon: '✨',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-900 mb-2">A Doce Matriarca</h3>
+                    <p class="mb-4">Hoje, Telma vive a "fase do açúcar". Sogra amorosa (após uma breve fase de "entrevistas" com as noras!) e avó dedicada de 8 netos e 2 bisnetos.</p>
+                    <p class="italic text-stone-500">"Uma mulher respeitada em toda sociedade, que faz da sua vida um jardim perfumado."</p>
+                `
+            }
+        ];
+
+        // --- CHART CONFIGURATION ---
+        // Using Chart.js to visualize personality traits described in the text.
+        // Needs a delay to ensure DOM is ready.
+        document.addEventListener('DOMContentLoaded', () => {
+            initTimeline();
+            initChart();
+            selectTimelineItem(0); // Select first item by default
+        });
+
+        function initChart() {
+            const ctx = document.getElementById('traitsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Fé / Espiritualidade', 'Força / Resiliência', 'Alegria / Festividade', 'Dedicação Familiar', 'Serviço Social'],
+                    datasets: [{
+                        label: 'Intensidade na Vida de Telma',
+                        data: [100, 95, 85, 100, 90], // Arbitrary high values reflecting the tribute
+                        backgroundColor: 'rgba(225, 29, 72, 0.2)', // Rose-600 with opacity
+                        borderColor: 'rgba(225, 29, 72, 1)',
+                        pointBackgroundColor: 'rgba(251, 191, 36, 1)', // Amber-400
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(225, 29, 72, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Lato', sans-serif" },
+                                color: '#44403c' // Stone-700
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false } // Hide numbers for cleaner look
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Uma característica marcante!';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- TIMELINE LOGIC ---
+        function initTimeline() {
+            const navContainer = document.getElementById('timeline-nav');
+            
+            timelineData.forEach((item, index) => {
+                const button = document.createElement('button');
+                button.className = `timeline-btn w-full text-left p-4 rounded-xl border border-transparent transition-all duration-200 flex items-center group relative z-10 bg-white shadow-sm hover:shadow-md mb-4`;
+                button.onclick = () => selectTimelineItem(index);
+                button.id = `btn-${index}`;
+                
+                button.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-xl mr-4 group-hover:bg-rose-100 transition-colors shrink-0">
+                        ${item.icon}
+                    </div>
+                    <div>
+                        <span class="block text-xs font-bold text-rose-500 uppercase tracking-wide">${item.year}</span>
+                        <span class="block text-stone-800 font-semibold text-lg">${item.title}</span>
+                    </div>
+                `;
+                navContainer.appendChild(button);
+            });
+        }
+
+        function selectTimelineItem(index) {
+            // Update Buttons State
+            document.querySelectorAll('.timeline-btn').forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('border-rose-300', 'ring-2', 'ring-rose-100');
+                    btn.classList.remove('border-transparent');
+                } else {
+                    btn.classList.remove('border-rose-300', 'ring-2', 'ring-rose-100');
+                    btn.classList.add('border-transparent');
+                }
+            });
+
+            // Update Content with simple fade effect
+            const display = document.getElementById('timeline-display');
+            display.style.opacity = '0';
+            
+            setTimeout(() => {
+                const data = timelineData[index];
+                display.innerHTML = `
+                    <div class="h-full flex flex-col justify-center">
+                        <div class="flex items-center mb-6">
+                            <span class="text-4xl mr-4">${data.icon}</span>
+                            <div>
+                                <h2 class="text-2xl font-bold text-rose-700 serif-font">${data.title}</h2>
+                                <span class="text-stone-400 font-medium">${data.year}</span>
+                            </div>
+                        </div>
+                        <div class="prose prose-stone leading-relaxed text-stone-600">
+                            ${data.content}
+                        </div>
+                    </div>
+                `;
+                display.style.opacity = '1';
+            }, 300);
+        }
+
+        // --- SCROLL HELPER ---
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // --- FLOWER INTERACTION ---
+        let flowerCount = 0;
+        const garden = document.getElementById('flower-garden');
+        const counterDisplay = document.getElementById('flower-count');
+
+        function plantFlower() {
+            flowerCount++;
+            counterDisplay.innerText = flowerCount;
+            
+            // Create flower element
+            const flower = document.createElement('div');
+            flower.innerText = ['🌹', '🌸', '🌺', '🌷', '🌻'][Math.floor(Math.random() * 5)];
+            flower.style.position = 'absolute';
+            flower.style.left = Math.random() * 90 + '%';
+            flower.style.fontSize = (Math.random() * 10 + 20) + 'px';
+            flower.style.bottom = '0';
+            flower.className = 'flower-float';
+            
+            garden.appendChild(flower);
+
+            // Remove after animation
+            setTimeout(() => {
+                flower.remove();
+            }, 2000);
+        }
+
+    </script>
+</body>
+</html>
